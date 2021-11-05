@@ -93,7 +93,7 @@ if __name__ == "__main__":
             ec.capture(0,"robo camera","img.jpg")
 
         elif "weather" in query:
-            api_key="14c0f7d7686b567fd266e35fe94c4dc3"
+            api_key="Put in your own id here"
             base_url="https://api.openweathermap.org/data/2.5/weather?"
             speak("what is the city name")
             city_name=takeCommand()
@@ -191,7 +191,7 @@ if __name__ == "__main__":
         elif 'ask' in query:
             speak('I can answer to computational and geographical questions. What question do you want to ask me')
             question = takeCommand()
-            app_id="TTXXJU-JKXAR7LYX3"
+            app_id="Put in your own id here"
             client = wolframalpha.Client('TTXXJU-JKXAR7LYX3')
             res = client.query(question)
             answer = next(res.results).text
