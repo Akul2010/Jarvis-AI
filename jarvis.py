@@ -54,14 +54,6 @@ def takeCommand():
         return "None"
     return query
 
-def sendEmail(to, content):
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.ehlo()
-    server.starttls()
-    server.login('youremail@gmail.com', 'your-password')
-    server.sendmail('youremail@gmail.com', to, content)
-    server.close()
-
 if __name__ == "__main__":
     wishMe()
     while True:
@@ -197,17 +189,6 @@ if __name__ == "__main__":
             answer = next(res.results).text
             speak(answer)
             print(answer)
-
-        elif 'email to me' in query:
-            try:
-                speak("What should I say?")
-                content = takeCommand()
-                to = "akulgoel2010@gmail.com"    
-                sendEmail(to, content)
-                speak("Email has been sent!")
-            except Exception as e:
-                print(e)
-                speak("Sorry sir, it seems there is a problem. I am not able to send this email")
 
         elif 'who made you' in query:
             speak('Akul Goel made me.')
