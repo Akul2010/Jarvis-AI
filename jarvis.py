@@ -5,11 +5,12 @@ import wikipedia
 import webbrowser
 import os
 import requests
-import subprocess
 import pyjokes
 import pyautogui
 import wolframalpha
-import smtplib
+import psutil
+import time
+
 from ecapture import ecapture as ec
 
 engine = pyttsx3.init('sapi5')
@@ -54,8 +55,37 @@ def takeCommand():
         return "None"
     return query
 
+def battery():
+    batt = str(psutil.sensors_battery())
+    batt=batt.split()
+    i=(batt[0].split('('))
+    i=(i[1].split('='))
+    print(i[1])
+    speak('Sir System battery is at' + i[1]+'%')
+
+def cpu():
+    usage = str(psutil.cpu_percent())
+    speak('Sir System CPU is at' + usage)
+
+def memory():
+    mem = str(psutil.virtual_memory())
+    mem=mem.split(',')
+    i=(mem[2].split('='))
+    speak('Sir System Memory Percentage is ' +i[1]+'%' )
+    j=(mem[1].split('='))
+    speak('Sir System Free Memory is at' +j[1] )
+
 if __name__ == "__main__":
-    wishMe()
+    NOTE = '''
+    ________|JARVIS VIRTUAL ASSISTANT|_________
+    |CREATED BY: Akul Goel                    |
+    |________________COMMANDS_________________|
+    |#open youtube|#open google|#open github  |
+    |#check battery|#search wikipedia|#ask me |
+    |#put computer on sleep mode|#log off     |
+    |_________________________________________|
+    '''
+    print(NOTE)
     while True:
     # if 1:
         query = takeCommand().lower()
@@ -72,20 +102,89 @@ if __name__ == "__main__":
         elif 'open youtube' in query:
             webbrowser.open("youtube.com")
 
+        elif 'open blooket' in query:
+            webbrowser.open("blooket.com")
+
         elif 'open google' in query:
             webbrowser.open("google.com")
 
+        elif 'pip install' in query:
+            message = query
+            stopwords = ['install']
+            querywords = message.split()
+            resultwords  = [word for word in querywords if word.lower() not in stopwords]
+            result = ' '.join(resultwords)
+            rand = [('installing '+result)]
+            speak(rand)
+            os.system('python -m pip install ' + result)
+
+        elif 'battery' in query:
+            battery()
+
+        elif 'cpu' in query:
+            cpu()
+
+        elif 'memory' in query:
+            memory()
+
+        elif 'npm install' in query:
+            message = query
+            stopwords = ['install']
+            querywords = message.split()
+            resultwords  = [word for word in querywords if word.lower() not in stopwords]
+            result = ' '.join(resultwords)
+            rand = [('installing '+result)]
+            speak(rand)
+            os.system('npm install ' + result)
+
         elif 'open stackoverflow' in query:
             webbrowser.open("stackoverflow.com")
+            time.sleep(5)
 
         elif 'open github' in query:
             webbrowser.open("github.com")   
+            time.sleep(5)
 
         elif "camera" in query or "take a photo" in query:
             ec.capture(0,"robo camera","img.jpg")
 
+        elif ('sleep mode') in query:
+            speak('good night')
+            os.system('rundll32.exe powrprof.dll,SetSuspendState 0,1,0')
+
+        elif 'log out' in query:
+            speak("Sir system is logging out")
+            speak("Sir Goodbye")
+            os.system("shutdown -l")
+
+        elif 'shut down' in query:
+            speak("Sir system is Shuting down")
+            speak("Goodbye Sir ")
+            os.system("shutdown /s /t 1")
+
+        elif 'restart' in query:
+            speak("Sir system is Restarting")
+            speak("Goodbye Sir ")
+            os.system("shutdown /r /t 1")
+            
+        elif 'remember that' in query:
+            speak("What should I remember?")
+            data = takeCommand()
+            speak("you said me to remember that"+data)
+            remember = open('data.txt','w')
+            remember.write(data)
+            remember.close()
+            speak("Sir i am Remembering Your Data")
+            speak("Any thing for me Sir")
+            
+        elif 'do you know anything' in query:
+            speak("Yes Sir")
+            remember =open('data.txt', 'r')
+            speak("You said me to remember that" +remember.read())
+
+
         elif "weather" in query:
-            api_key="Put in your own id here"
+            api_key="Paste your own id here"
             base_url="https://api.openweathermap.org/data/2.5/weather?"
             speak("what is the city name")
             city_name=takeCommand()
@@ -110,20 +209,6 @@ if __name__ == "__main__":
                       str(current_humidiy) +
                       "\n description = " +
                       str(weather_description))
-
-        elif 'where am i' or 'where are we' in query:
-            speak('Let me check, sir')
-            try:
-                ipAdd = requests.get('https://api.ipify.org').text
-                print(ipAdd)
-                url = 'https://get.geojs.io/v1/ip/geo'+ipAdd+'.json'
-                geo_requests = requests.get(url)
-                geo_data = geo_requests.json()
-                city = geo_data['city']
-                country = geo_data['country']
-                speak(f'Sir, I might be wrong, but I believe we are in {city}, {country}')
-            except Exception as e:
-                speak('Sorry sir, I am not able to find our location')
 
         elif 'screenshot' in query:
             image = pyautogui.screenshot()
@@ -183,12 +268,15 @@ if __name__ == "__main__":
         elif 'ask' in query:
             speak('I can answer to computational and geographical questions. What question do you want to ask me')
             question = takeCommand()
-            app_id="Put in your own id here"
-            client = wolframalpha.Client('TTXXJU-JKXAR7LYX3')
+            app_id="paste your own id here"
+            client = wolframalpha.Client('paste in your own id here too')
             res = client.query(question)
             answer = next(res.results).text
             speak(answer)
             print(answer)
+
+        elif 'open w3school' in query:
+            webbrowser.open("w3schools.com")
 
         elif 'who made you' in query:
             speak('Akul Goel made me.')
@@ -196,6 +284,5 @@ if __name__ == "__main__":
         elif 'thank you' in query:
             speak('Of course, sir. No need to thank me')
 
-        elif "log off" in query or "sign out" in query:
-            speak("Ok , your pc will log off in 10 sec, make sure you exit from all applications")
-            subprocess.call(["shutdown", "/l"])
+        elif 'what can you do' in query:
+            speak('I can click screenshots of your current screen, click a photo using your camera')
