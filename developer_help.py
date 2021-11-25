@@ -2,7 +2,7 @@ import os
 import jarvis
 
 ############################## PYTHON PROGRAMMING SUPPORT ##################################
-def pipInstall():
+def pipInstallPackage():
     message = jarvis.query
     stopwords = ['install']
     querywords = message.split()
@@ -14,7 +14,7 @@ def pipInstall():
 ############################## PYTHON PROGRAMMING SUPPORT ##################################
 
 ############################## JAVASCRIPT PROGRAMMING SUPPORT ##################################
-def npmInstall():
+def npmInstallPackage():
     message = jarvis.query
     stopwords = ['install']
     querywords = message.split()
