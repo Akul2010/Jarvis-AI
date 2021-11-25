@@ -4,14 +4,21 @@ import datetime
 import wikipedia
 import webbrowser
 import os
-import requests
 import pyjokes
 import pyautogui
 import wolframalpha
-import psutil
 import time
+import requests
+import psutil
+import sys
+import random
+import yfinance as yf
+
+import developer_help
 
 from ecapture import ecapture as ec
+from urllib.request import urlopen
+from bs4 import BeautifulSoup as soup
 
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
@@ -23,7 +30,6 @@ def speak(audio):
     engine.say(audio)
     engine.runAndWait()
 
-
 def wishMe():
     hour = int(datetime.datetime.now().hour)
     if hour>=0 and hour<12:
@@ -34,6 +40,26 @@ def wishMe():
 
     else:
         speak("Good Evening sir, how may I help you?")  
+
+def news():
+    """
+    This method will tells top 15 current NEWS
+    :return: list / bool
+    """
+    try:
+        news_url = "https://news.google.com/news/rss"
+        Client = urlopen(news_url)
+        xml_page = Client.read()
+        Client.close()
+        soup_page = soup(xml_page, "xml")
+        news_list = soup_page.findAll("item")
+        li = []
+        for news in news_list[:15]:
+            li.append(str(news.title.text.encode('utf-8'))[1:])
+        return li
+    except Exception as e:
+        print(e)
+        return False
 
 def takeCommand():
     #It takes microphone input from the user and returns string output
@@ -75,17 +101,59 @@ def memory():
     j=(mem[1].split('='))
     speak('Sir System Free Memory is at' +j[1] )
 
+def check_weather():
+    api_key="14c0f7d7686b567fd266e35fe94c4dc3"
+    base_url="https://api.openweathermap.org/data/2.5/weather?"
+    speak("what is the city name")
+    city_name=takeCommand()
+    complete_url=base_url+"appid="+api_key+"&q="+city_name
+    response = requests.get(complete_url)
+    x=response.json()
+    if x["cod"]!="404":
+        y=x["main"]
+        current_temperature = y["temp"]
+        current_humidiy = y["humidity"]
+        z = x["weather"]
+        weather_description = z[0]["description"]
+        speak(" Temperature in kelvin unit is " +
+               str(current_temperature) +
+               "\n humidity in percentage is " +
+               str(current_humidiy) +
+               "\n description  " +
+               str(weather_description))
+        print(" Temperature in kelvin unit = " +
+               str(current_temperature) +
+               "\n humidity (in percentage) = " +
+               str(current_humidiy) +
+               "\n description = " +
+               str(weather_description))
+
 if __name__ == "__main__":
     NOTE = '''
-    ________|JARVIS VIRTUAL ASSISTANT|_________
-    |CREATED BY: Akul Goel                    |
-    |________________COMMANDS_________________|
-    |#open youtube|#open google|#open github  |
-    |#check battery|#search wikipedia|#ask me |
-    |#put computer on sleep mode|#log off     |
-    |_________________________________________|
+        +=======================================+
+        |......JARVIS VIRTUAL INTELLIGENCE......|
+        +---------------------------------------+
+        |#Author: Akul Goel                     |
+        |#Date: 01/06/2016                      |
+        |#Changing the Description of this tool |
+        | Won't made you the coder              |
+        |#I don't take responsibility for       |
+        | problems regarding viruses or glitches|
+        +---------------------------------------+
+        |......JARVIS VIRTUAL INTELLIGENCE......|
+        +=======================================+
+        |              OPTIONS:                 |
+        |#hello/hi     #goodbye    #sleep mode  |
+        |#your name    #jarvis     #what time   |
+        |#asite.com    #next music #music       |
+        |#pause music  #wifi       #thank you   |
+        |#start/stop someapp                    |
+        |#pip install/npm install               |
+        |#googlemaps tanyplace                  |
+        +=======================================+
     '''
     print(NOTE)
+    wishMe()
     while True:
     # if 1:
         query = takeCommand().lower()
@@ -98,6 +166,20 @@ if __name__ == "__main__":
             speak("According to Wikipedia")
             print(results)
             speak(results)
+            
+        elif 'wake up' in query:
+            takeCommand()
+            
+        elif 'goodbye' in query:
+            sys.exit()
+            
+        elif 'go to sleep' in query:
+            speak('Ok sir, I am going to sleep. You can call me back anytime.')
+            break
+        
+        elif "what's up" in query or 'how are you' in query:
+            stMsgs = ['Just doing my thing!', 'I am fine!', 'Nice!', 'I am nice and full of energy', 'Ready to help you sir']
+            speak(random.choice(stMsgs))
 
         elif 'open youtube' in query:
             webbrowser.open("youtube.com")
@@ -105,18 +187,28 @@ if __name__ == "__main__":
         elif 'open blooket' in query:
             webbrowser.open("blooket.com")
 
-        elif 'open google' in query:
-            webbrowser.open("google.com")
+        elif 'open chrome' or 'open google' in query:
+            print("Opening Chrome Browser...")
+            speak("opening chrome browser")
+            chrome = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
+            os.startfile(os.path.join(chrome))
+
+        elif 'close chrome' or 'close google' in query:
+            print("closing Chrome Browser...")
+            speak("closing chrome browser")
+            os.system('TASKKILL /F /IM Google_Chrome.exe')
+
+        elif 'volume up' in query:
+            pyautogui.press("volumeup")
+
+        elif 'volume down' in query:
+            pyautogui.press("volumedown")
+
+        elif 'volume mute' or 'mute' in query:
+            pyautogui.press("volumemute")
 
         elif 'pip install' in query:
-            message = query
-            stopwords = ['install']
-            querywords = message.split()
-            resultwords  = [word for word in querywords if word.lower() not in stopwords]
-            result = ' '.join(resultwords)
-            rand = [('installing '+result)]
-            speak(rand)
-            os.system('python -m pip install ' + result)
+            developer_help.pipInstall()
 
         elif 'battery' in query:
             battery()
@@ -128,14 +220,7 @@ if __name__ == "__main__":
             memory()
 
         elif 'npm install' in query:
-            message = query
-            stopwords = ['install']
-            querywords = message.split()
-            resultwords  = [word for word in querywords if word.lower() not in stopwords]
-            result = ' '.join(resultwords)
-            rand = [('installing '+result)]
-            speak(rand)
-            os.system('npm install ' + result)
+            developer_help.npmInstall()
 
         elif 'open stackoverflow' in query:
             webbrowser.open("stackoverflow.com")
@@ -146,7 +231,8 @@ if __name__ == "__main__":
             time.sleep(5)
 
         elif "camera" in query or "take a photo" in query:
-            ec.capture(0,"robo camera","img.jpg")
+            time.sleep(5)
+            ec.capture(0,"Camera","img.jpg")
 
         elif ('sleep mode') in query:
             speak('good night')
@@ -182,33 +268,8 @@ if __name__ == "__main__":
             remember =open('data.txt', 'r')
             speak("You said me to remember that" +remember.read())
 
-
         elif "weather" in query:
-            api_key="Paste your own id here"
-            base_url="https://api.openweathermap.org/data/2.5/weather?"
-            speak("what is the city name")
-            city_name=takeCommand()
-            complete_url=base_url+"appid="+api_key+"&q="+city_name
-            response = requests.get(complete_url)
-            x=response.json()
-            if x["cod"]!="404":
-                y=x["main"]
-                current_temperature = y["temp"]
-                current_humidiy = y["humidity"]
-                z = x["weather"]
-                weather_description = z[0]["description"]
-                speak(" Temperature in kelvin unit is " +
-                      str(current_temperature) +
-                      "\n humidity in percentage is " +
-                      str(current_humidiy) +
-                      "\n description  " +
-                      str(weather_description))
-                print(" Temperature in kelvin unit = " +
-                      str(current_temperature) +
-                      "\n humidity (in percentage) = " +
-                      str(current_humidiy) +
-                      "\n description = " +
-                      str(weather_description))
+            check_weather()
 
         elif 'screenshot' in query:
             image = pyautogui.screenshot()
@@ -218,6 +279,15 @@ if __name__ == "__main__":
         elif 'open visual studio code' in query:
             vscodePath = 'C:\\Users\\materialsworld\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Visual Studio Code'
             os.startfile(vscodePath)
+            
+        elif "open command prompt" in query:
+            speak('opening command prompt')
+            os.system("start cmd")
+
+        elif "what is my ip" in query:
+            ip = requests.get("https://api.ipify.org").text
+            speak(f"Your ip address is {ip}")
+            print(f"Your ip address is {ip}")
 
         elif 'open android studio' in query:
             androidStudioPath = 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Android Studio'
@@ -229,15 +299,17 @@ if __name__ == "__main__":
         elif 'change voice to female voice' in query:
             engine.setProperty('voice', voices[1].id)
             speak('Voice has been changed to female voice')
+            speak('Hello,sir. I am Friday.')
 
         elif 'change voice to male voice' in query:
             engine.setProperty('voice', voices[0].id)
             speak('Voice has been changed to male voice')
+            speak('Hello,sir. I am Jarvis.')
 
         elif 'play music' in query:
             music_dir = 'D:\\Non Critical\\songs\\Favorite Songs2'
             songs = os.listdir(music_dir)
-            print(songs)    
+            print(songs)
             os.startfile(os.path.join(music_dir, songs[0]))
 
         elif 'Hello jarvis' in query:
@@ -249,9 +321,14 @@ if __name__ == "__main__":
             speak(random_joke)
 
         elif 'the time' in query:
-            strTime = datetime.datetime.now().strftime("%H:%M:%S")    
-            print('NOTE: The time is given in the ')
-            speak(f"Sir, the time is {strTime}")
+            time = time.ctime().split(" ")[3].split(":")[0:2]  
+            if time[0] == "00":  
+                hours = '12'  
+            else:  
+                hours = time[0]  
+            minutes = time[1]  
+            time = f'{hours} {minutes}'  
+            speak(time)  
 
         elif 'open the folder Professional Apps' in query:
             folderPath = "C:\\Users\\materialsworld\\Desktop\\Akul Goel\\Professional Apps"
@@ -262,20 +339,19 @@ if __name__ == "__main__":
             os.startfile(folder1Path)
 
         elif 'news' in query:
-            news = webbrowser.open('https://timesofindia.indiatimes.com/home/headlines')
-            speak('Here are some headlines from the Times of India,Happy reading')
+            news()
 
         elif 'ask' in query:
             speak('I can answer to computational and geographical questions. What question do you want to ask me')
             question = takeCommand()
-            app_id="paste your own id here"
-            client = wolframalpha.Client('paste in your own id here too')
+            app_id="TTXXJU-JKXAR7LYX3"
+            client = wolframalpha.Client('TTXXJU-JKXAR7LYX3')
             res = client.query(question)
             answer = next(res.results).text
             speak(answer)
             print(answer)
 
-        elif 'open w3school' in query:
+        elif 'open w3schools' in query:
             webbrowser.open("w3schools.com")
 
         elif 'who made you' in query:
@@ -285,4 +361,24 @@ if __name__ == "__main__":
             speak('Of course, sir. No need to thank me')
 
         elif 'what can you do' in query:
-            speak('I can click screenshots of your current screen, click a photo using your camera, and much more!')
+            speak('I can click screenshots of your current screen, click a photo using your camera and do much more. I have a list of commands to help you.')
+            print(NOTE)
+            
+        elif 'stock prices' in query:
+            search_term = takeCommand().lower().split(" of ")[-1].strip() #strip removes whitespace after/before a term in string  
+            stocks = {  
+                "apple":"AAPL",  
+                "microsoft":"MSFT",  
+                "facebook":"FB",  
+                "tesla":"TSLA",  
+                "bitcoin":"BTC",  
+                "amazon":"AMZN"
+            }  
+            try:  
+                stock = stocks[search_term]  
+                stock = yf.Ticker(stock)  
+                price = stock.info["regularMarketPrice"]  
+    
+                speak(f'the stock price of {search_term} is {price} {stock.info["currency"]}')  
+            except:  
+                speak('oops, something went wrong')
