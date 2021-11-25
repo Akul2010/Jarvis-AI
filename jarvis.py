@@ -149,7 +149,6 @@ if __name__ == "__main__":
         |#pause music  #wifi       #thank you   |
         |#start/stop someapp                    |
         |#pip install/npm install               |
-        |#googlemaps tanyplace                  |
         +=======================================+
     '''
     print(NOTE)
@@ -208,7 +207,7 @@ if __name__ == "__main__":
             pyautogui.press("volumemute")
 
         elif 'pip install' in query:
-            developer_help.pipInstall()
+            developer_help.pipInstallPackage()
 
         elif 'battery' in query:
             battery()
@@ -220,7 +219,7 @@ if __name__ == "__main__":
             memory()
 
         elif 'npm install' in query:
-            developer_help.npmInstall()
+            developer_help.npmInstallPackage()
 
         elif 'open stackoverflow' in query:
             webbrowser.open("stackoverflow.com")
